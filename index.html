@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEON TETRIS - 클래식 싱글 플레이어 테트리스</title>
+  <meta name="description" content="로그인 없이 즉시 즐기는 화려한 네온 스타일의 싱글 플레이어 테트리스 웹 게임. 방향키 조작 및 다이내믹 사운드 효과 제공.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="app-container">
+    <!-- 상단 헤더 -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="logo-icon">▲</div>
+        <h1 class="logo-text">NEON <span>TETRIS</span></h1>
+      </div>
+      <div class="header-controls">
+        <button id="btn-sound-fx" class="btn-icon" title="효과음 켜기/끄기" aria-label="효과음">
+          <span class="icon">🔊</span>
+          <span class="btn-label">SFX</span>
+        </button>
+        <button id="btn-sound-bgm" class="btn-icon" title="배경음악(BGM) 켜기/끄기" aria-label="BGM">
+          <span class="icon">🎵</span>
+          <span class="btn-label">BGM</span>
+        </button>
+        <button id="btn-pause-header" class="btn-icon" title="일시정지 (P / Esc)" aria-label="일시정지">
+          <span class="icon">⏸</span>
+          <span class="btn-label">PAUSE</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 메인 게임 레이아웃 -->
+    <main class="game-layout">
+      <!-- 좌측 사이드바: HOLD & STATS -->
+      <aside class="sidebar sidebar-left">
+        <!-- HOLD 패널 -->
+        <section class="glass-card panel-hold">
+          <h2 class="card-title">HOLD</h2>
+          <div class="canvas-box">
+            <canvas id="hold-canvas" width="120" height="120"></canvas>
+          </div>
+          <div class="card-shortcut"><kbd>C</kbd> / <kbd>Shift</kbd></div>
+        </section>
+
+        <!-- 스탯 패널 -->
+        <section class="glass-card panel-stats">
+          <div class="stat-item">
+            <span class="stat-label">LEVEL</span>
+            <span id="level-display" class="stat-value digital">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">LINES</span>
+            <span id="lines-display" class="stat-value digital">0</span>
+          </div>
+        </section>
+      </aside>
+
+      <!-- 중앙 메인 보드 -->
+      <section class="board-container">
+        <div class="canvas-wrapper" id="canvas-wrapper">
+          <canvas id="tetris-canvas" width="300" height="600"></canvas>
+
+          <!-- 시작 오버레이 -->
+          <div id="start-overlay" class="overlay active">
+            <div class="overlay-content">
+              <h2 class="overlay-title">READY TO PLAY?</h2>
+              <p class="overlay-desc">로그인 없이 바로 즐기는 클래식 테트리스</p>
+              <div class="key-preview">
+                <div class="key-row"><kbd>↑</kbd> 회전 &nbsp;|&nbsp; <kbd>↓</kbd> 빠른하강</div>
+                <div class="key-row"><kbd>←</kbd> <kbd>→</kbd> 좌우이동 &nbsp;|&nbsp; <kbd>Space</kbd> 하드드롭</div>
+              </div>
+              <button id="btn-start" class="btn-action">GAME START</button>
+            </div>
+          </div>
+
+          <!-- 일시정지 오버레이 -->
+          <div id="pause-overlay" class="overlay">
+            <div class="overlay-content">
+              <h2 class="overlay-title">PAUSED</h2>
+              <p class="overlay-desc">게임이 일시정지 되었습니다</p>
+              <div class="overlay-buttons">
+                <button id="btn-resume" class="btn-action">계속하기</button>
+                <button id="btn-restart-pause" class="btn-sub">다시 시작</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 게임오버 오버레이 -->
+          <div id="gameover-overlay" class="overlay">
+            <div class="overlay-content">
+              <div class="gameover-badge">GAME OVER</div>
+              <div class="final-score-box">
+                <div class="score-sub">FINAL SCORE</div>
+                <div id="final-score" class="score-main digital">0</div>
+                <div id="new-high-badge" class="high-badge hidden">🏆 NEW RECORD!</div>
+              </div>
+              <button id="btn-restart" class="btn-action">PLAY AGAIN</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 우측 사이드바: SCORE & NEXT -->
+      <aside class="sidebar sidebar-right">
+        <!-- SCORE & HIGH SCORE -->
+        <section class="glass-card panel-score">
+          <div class="stat-item">
+            <span class="stat-label">SCORE</span>
+            <span id="score-display" class="stat-value digital neon-blue">0</span>
+          </div>
+          <div class="stat-item high-score-box">
+            <span class="stat-label">👑 TOP SCORE</span>
+            <span id="highscore-display" class="stat-value digital neon-gold">0</span>
+          </div>
+        </section>
+
+        <!-- NEXT 패널 -->
+        <section class="glass-card panel-next">
+          <h2 class="card-title">NEXT</h2>
+          <div class="next-pieces-list">
+            <div class="next-item active-next"><canvas id="next-canvas-1" width="100" height="80"></canvas></div>
+            <div class="next-item"><canvas id="next-canvas-2" width="80" height="60"></canvas></div>
+            <div class="next-item"><canvas id="next-canvas-3" width="80" height="60"></canvas></div>
+          </div>
+        </section>
+
+        <!-- 조작 안내 카드 -->
+        <section class="glass-card panel-guide">
+          <h2 class="card-title">CONTROLS</h2>
+          <ul class="guide-list">
+            <li><span><kbd>←</kbd> <kbd>→</kbd></span> 좌 / 우 이동</li>
+            <li><span><kbd>↑</kbd></span> 시계방향 회전</li>
+            <li><span><kbd>↓</kbd></span> 소프트 드롭</li>
+            <li><span><kbd>Space</kbd></span> 하드 드롭</li>
+            <li><span><kbd>C</kbd> / <kbd>Shift</kbd></span> 블록 홀드</li>
+            <li><span><kbd>P</kbd> / <kbd>Esc</kbd></span> 일시정지</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <!-- 모바일 / 터치 온스크린 컨트롤러 -->
+    <section class="touch-controls" id="touch-controls" aria-label="터치 컨트롤러">
+      <div class="touch-cluster cluster-left">
+        <button id="touch-left" class="touch-btn" aria-label="왼쪽 이동">◀</button>
+        <div class="vertical-group">
+          <button id="touch-rotate" class="touch-btn touch-btn-primary" aria-label="회전">▲</button>
+          <button id="touch-down" class="touch-btn" aria-label="소프트 드롭">▼</button>
+        </div>
+        <button id="touch-right" class="touch-btn" aria-label="오른쪽 이동">▶</button>
+      </div>
+
+      <div class="touch-cluster cluster-right">
+        <button id="touch-hold" class="touch-btn touch-btn-sub" aria-label="홀드">HOLD</button>
+        <button id="touch-drop" class="touch-btn touch-btn-accent" aria-label="하드 드롭">DROP</button>
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="app-footer">
+      <span>Classic Single Player Tetris &bull; Web Audio Synthesizer &bull; Zero Login</span>
+    </footer>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="tetris.js"></script>
+</body>
+</html>
